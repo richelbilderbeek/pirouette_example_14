@@ -1,0 +1,79 @@
+language: r
+dist: bionic
+cache: packages
+
+r_packages:
+  - devtools
+  - ggplot2
+  - hunspell
+  - nLTT
+  - xml2
+  - xtable
+
+r_github_packages:
+  - Giappo/mbd
+  - jimhester/covr
+  - jimhester/lintr
+  - ropensci/beautier
+  - ropensci/beastier
+  - ropensci/mauricer
+  - ropensci/babette
+  - richelbilderbeek/mcbette
+  - richelbilderbeek/ribir
+  - richelbilderbeek/becosys
+  - richelbilderbeek/pirouette@richel
+  - richelbilderbeek/peregrine
+  - MangoTheCat/goodpractice
+  - KlausVigo/phangorn
+  - ropensci/spelling
+
+bioc_packages:
+  - ggtree
+
+before_install:
+  - echo $TRAVIS_R_VERSION_STRING
+  # ImageMagick
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo add-apt-repository -y ppa:opencpu/imagemagick; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install -y libmagick++-dev; fi
+  # Rmpfr
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt install -qq libmpfr-dev; fi
+  # Java
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then R CMD javareconf; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then R --quiet -e 'install.packages("rJava", type="source", repos="http://cran.us.r-project.org")'; fi
+  # Check dead links
+  - sudo apt-get install -qq npm
+  - npm config set strict-ssl false
+  - sudo npm install -g markdown-link-check
+
+before_script:
+  - Rscript -e "beastier::install_beast2()"
+  - Rscript -e "mauricer::install_beast2_pkg(\"NS\")"
+
+script:
+  # Delete all previous results
+  - rm -rf example_13_314
+  # Go!
+  - travis_wait 60 Rscript example_13.R
+  # Check if all files are created
+  - if [ ! -f example_13_314/esses_best.latex ]; then echo "file 'esses_best.latex' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/esses_gen.latex ]; then echo "file 'esses_gen.latex' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/esses_twin_best.latex ]; then echo "file 'esses_twin_best.latex' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/esses_twin_gen.latex ]; then echo "file 'esses_twin_gen.latex' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/true_alignment.png ]; then echo "file 'true_alignment.png' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/true_error_violin_best.png ]; then echo "file 'true_error_violin_best.png' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/true_error_violin_gen.png ]; then echo "file 'true_error_violin_gen.png' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/true_posterior_best.png ]; then echo "file 'true_posterior_best.png' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/true_posterior_gen.png ]; then echo "file 'true_posterior_gen.png' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/twin_alignment.png ]; then echo "file 'twin_alignment.png' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/twin_error_violin_best.png ]; then echo "file 'twin_error_violin_best.png' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/twin_error_violin_gen.png ]; then echo "file 'twin_error_violin_gen.png' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/twin_posterior_best.png ]; then echo "file 'twin_posterior_best.png' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/twin_posterior_gen.png ]; then echo "file 'twin_posterior_gen.png' not found" ; exit 1 ; fi
+  - if [ ! -f example_13_314/twin_tree.png ]; then echo "file 'twin_tree.png' not found" ; exit 1 ; fi
+  # Check dead links
+  - rm .travis.yml
+  - ./scripts/check_dead_links
+
+after_success:
+  - cd example_13_314 ; find .
