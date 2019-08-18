@@ -92,6 +92,15 @@ if (beastier::is_on_ci()) {
   }
 }
 
+# Log-transformed nLTT function
+lt_nltt <- function(tree, trees) {
+  nLTT::nltts_diff(
+    tree = tree,
+    trees = trees,
+    log_transform = TRUE
+  )
+}
+
 pir_params <- create_pir_params(
   alignment_params = alignment_params,
   experiments = experiments,
