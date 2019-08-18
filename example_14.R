@@ -1,0 +1,136 @@
+# Code of example 13
+#
+# Works under Linux and MacOS only
+
+# Set the RNG seed
+rng_seed <- 314
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) == 1) {
+  arg <- suppressWarnings(as.numeric(args[1]))
+  if (is.na(arg)) {
+    stop(
+      "Please supply a numerical value for the RNG seed. \n",
+      "Actual value: ", args[1]
+    )
+  }
+  rng_seed <- arg
+  if (rng_seed < 1) {
+    stop("Please supply an RNG seed with a positive non-zero value")
+  }
+}
+if (length(args) > 1) {
+  stop(
+    "Please supply only 1 argument for the RNG seed. \n",
+    "Number of arguments given: ", length(args) - 1
+  )
+}
+
+library(pirouette)
+suppressMessages(library(ggplot2))
+
+root_folder <- getwd()
+example_no <- 13
+example_folder <- file.path(root_folder, paste0("example_", example_no, "_", rng_seed))
+dir.create(example_folder, showWarnings = FALSE, recursive = TRUE)
+setwd(example_folder)
+set.seed(rng_seed)
+testit::assert(is_beast2_installed())
+
+phylogeny  <- ape::read.tree(
+  text = "(((A:8, B:8):1, C:9):1, ((D:8, E:8):1, F:9):1);"
+)
+
+alignment_params <- create_alignment_params(
+  root_sequence = create_blocked_dna(length = 1000),
+  mutation_rate = 0.1,
+  rng_seed = rng_seed
+)
+
+
+# JC69, strict, Yule
+generative_experiment <- create_experiment(
+  inference_conditions = create_inference_conditions(
+    model_type = "generative",
+    run_if = "always",
+    do_measure_evidence = TRUE
+  ),
+  inference_model = beautier::create_inference_model(
+    site_model = beautier::create_jc69_site_model(),
+    clock_model = beautier::create_strict_clock_model(),
+    tree_prior = beautier::create_yule_tree_prior(),
+    mcmc = beautier::create_mcmc(chain_length = 10e+7, store_every = 1000)
+  )
+)
+generative_experiment <- create_gen_experiment()
+check_experiment(generative_experiment)
+
+# All non-Yule tree priors
+candidate_experiments <- create_all_experiments(
+  exclude_model = generative_experiment$inference_model
+)
+check_experiments(candidate_experiments)
+
+experiments <- c(list(generative_experiment), candidate_experiments)
+
+# Set the RNG seed
+for (i in seq_along(experiments)) {
+  experiments[[i]]$beast2_options$rng_seed <- rng_seed
+}
+
+check_experiments(experiments)
+
+# Testing
+if (beastier::is_on_ci()) {
+  experiments <- experiments[1:3]
+  for (i in seq_along(experiments)) {
+    experiments[[i]]$inference_model$mcmc <- beautier::create_mcmc(chain_length = 3000, store_every = 1000)
+    experiments[[i]]$est_evidence_mcmc <- beautier::create_mcmc_nested_sampling(
+      chain_length = 3000,
+      store_every = 1000,
+      epsilon = 100.0
+    )
+  }
+}
+
+pir_params <- create_pir_params(
+  alignment_params = alignment_params,
+  experiments = experiments,
+  twinning_params = create_twinning_params(
+    rng_seed_twin_tree = rng_seed,
+    rng_seed_twin_alignment = rng_seed
+  ),
+  error_measure_params = create_error_measure_params(
+    error_function = get_gamma_error_function()
+  )
+)
+
+# Make Peregrine friendly
+pir_params <- peregrine::to_pff_pir_params(pir_params)
+rm_pir_param_files(pir_params)
+
+Sys.time()
+errors <- pir_run(
+  phylogeny,
+  pir_params = pir_params
+)
+Sys.time()
+
+utils::write.csv(
+  x = errors,
+  file = file.path(example_folder, "errors.csv"),
+  row.names = FALSE
+)
+
+pir_plot(errors) +
+  ggsave(file.path(example_folder, "errors.png"))
+
+pir_to_pics(
+  phylogeny = phylogeny,
+  pir_params = pir_params,
+  folder = example_folder
+)
+
+pir_to_tables(
+  pir_params = pir_params,
+  folder = example_folder
+)
