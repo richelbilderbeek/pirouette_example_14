@@ -1,0 +1,24 @@
+% latex table generated in R 3.6.0 by xtable 1.8-4 package
+% Thu Oct  3 12:54:06 2019
+\begin{table}[ht]
+\centering
+\begin{tabular}{ll}
+  \hline
+parameter & ESS \\ 
+  \hline
+posterior & 5295 \\ 
+  likelihood & 9778 \\ 
+  prior & 1057 \\ 
+  treeLikelihood & 9778 \\ 
+  TreeHeight & 1589 \\ 
+  ucldStdev & 1961 \\ 
+  rate.mean & 1735 \\ 
+  rate.variance & 2419 \\ 
+  rate.coefficientOfVariation & 2078 \\ 
+  CoalescentExponential & 1592 \\ 
+  ePopSize & 3230 \\ 
+  growthRate & 1066 \\ 
+   \hline
+\end{tabular}
+\caption{ESSes for best candidate model} 
+\end{table}
