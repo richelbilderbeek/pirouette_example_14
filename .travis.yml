@@ -20,7 +20,7 @@ r_github_packages:
   - richelbilderbeek/mcbette
   - richelbilderbeek/ribir
   - richelbilderbeek/becosys
-  - richelbilderbeek/nLTT
+  - richelbilderbeek/nLTT@develop
   - richelbilderbeek/pirouette@richel
   - richelbilderbeek/peregrine
   - MangoTheCat/goodpractice
