@@ -95,7 +95,7 @@ pir_params <- create_pir_params(
     rng_seed_twin_alignment = rng_seed
   ),
   error_measure_params = create_error_measure_params(
-    error_function = lt_nltt
+    error_fun = lt_nltt
   )
 )
 
