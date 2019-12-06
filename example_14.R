@@ -21,7 +21,7 @@ phylogeny  <- ape::read.tree(
 )
 
 alignment_params <- create_alignment_params(
-  sim_true_alignment_fun = get_sim_true_alignment_with_std_site_model_fun(
+  sim_true_alignment_fun = get_sim_true_alignment_with_std_nsm_fun(
     mutation_rate = 0.1
   ),
   root_sequence = create_blocked_dna(length = 1000),
