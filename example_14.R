@@ -28,8 +28,8 @@ alignment_params <- create_alignment_params(
 generative_experiment <- create_gen_experiment()
 check_experiment(generative_experiment)
 
-# All non-Yule tree priors
-candidate_experiments <- create_all_experiments(
+# All non-birth-death tree priors
+candidate_experiments <- create_all_bd_experiments(
   exclude_model = generative_experiment$inference_model
 )
 check_experiments(candidate_experiments)
